@@ -11,6 +11,10 @@ import (
 // 最小原则实现
 // 例子 有个数据上报给第三方平台服务
 
+func init() {
+	logrus.SetLevel(logrus.DebugLevel)
+}
+
 type State int32
 
 const (
@@ -25,13 +29,12 @@ var BreakerErr = errors.New("Breaker state error!")
 type HeadlerFunc func(ctx context.Context, req interface{}) (interface{}, error)
 
 type Breaker struct {
-	state int32
+	state     int32
+	failuers  int32
+	successes int32
 
 	MaxFailures  int32
 	MaxSuccesses int32
-
-	failuers  int32
-	successes int32
 
 	headlerFunc     HeadlerFunc
 	pollingTimer    *time.Timer
@@ -41,7 +44,7 @@ type Breaker struct {
 }
 
 func NewBreaker(f HeadlerFunc) *Breaker {
-	TimeOutInterval := 500 * time.Millisecond
+	TimeOutInterval := 600 * time.Millisecond
 	b := &Breaker{
 		MaxFailures:     3,
 		MaxSuccesses:    3,
